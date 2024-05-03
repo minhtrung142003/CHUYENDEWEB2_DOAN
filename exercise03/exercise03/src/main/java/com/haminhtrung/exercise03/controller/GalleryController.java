@@ -1,0 +1,83 @@
+package com.haminhtrung.exercise03.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.haminhtrung.exercise03.entity.Category;
+import com.haminhtrung.exercise03.entity.Gallery;
+import com.haminhtrung.exercise03.service.GalleryService;
+
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@CrossOrigin({"http://localhost:3000", "http://localhost:3001"})
+
+@RequestMapping("api/galleries")
+public class GalleryController {
+    @Autowired
+    private GalleryService galleryService;
+
+    private final String UPLOAD_DIR = "E:/WEB_SPRINGBOOT/DOANMONHOC_FINALLY/exercise03/exercise03/src/main/resources/static/upload";
+    @GetMapping("/product/{productId}")
+    public ResponseEntity<List<Gallery>> getImagesByProductId(@PathVariable UUID productId) {
+        List<Gallery> galleries = galleryService.getImagesByProductId(productId);
+        return ResponseEntity.ok(galleries);
+    }
+
+    @GetMapping("/image/{fileName:.+}")
+    public ResponseEntity<String> getImageUrl(@PathVariable String fileName) {
+        try {
+            String imageUrl = "/upload/" + fileName; // Tạo đường dẫn URL của ảnh
+            return ResponseEntity.ok().body(imageUrl); // Trả về URL của ảnh
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    @GetMapping
+    public ResponseEntity<List<Gallery>> getAllGalleries() {
+        List<Gallery> galleries = galleryService.getAllGalleries();
+        return new ResponseEntity<>(galleries, HttpStatus.OK);
+    }
+
+      @GetMapping("/{id}")
+    public ResponseEntity<Gallery> getGalleryById(@PathVariable("id") UUID id) {
+        Gallery gallery = galleryService.getGalleryById(id);
+        if (gallery != null) {
+            return new ResponseEntity<>(gallery, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PostMapping("/uploadImage/{productId}")
+    public Gallery uploadImage(@PathVariable UUID productId, @RequestParam("file") MultipartFile file) {
+        return galleryService.saveImage(productId, file,0);
+    }
+
+    @PostMapping("/uploadImages/{productId}")
+    public List<Gallery> uploadImages(@PathVariable UUID productId, @RequestParam("files") MultipartFile[] files) {
+        return galleryService.saveImages(productId, files);
+    }
+    @PostMapping("/update/{productId}")
+    public ResponseEntity<String> updateGallery(@PathVariable UUID productId, @RequestParam("files") MultipartFile[] newFiles) {
+        try {
+            // Xóa toàn bộ ảnh cũ của sản phẩm
+            galleryService.deleteGalleryByProductId(productId);
+
+            // Lưu ảnh mới
+            galleryService.saveImages(productId, newFiles);
+
+            return ResponseEntity.ok("Update gallery successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update gallery");
+        }
+    }
+}
