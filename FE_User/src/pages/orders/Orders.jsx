@@ -11,11 +11,12 @@ function Orders() {
     const search = async () => {
         try {
             const data = await getListCart(currentUser?.id);
-            setStateValue((pre) => ({ ...pre, listData: data?.data }))
+            setStateValue((pre) => ({ ...pre, listData: data?.data?.map(item => ({ ...item.productDTO, cartId: item.cartId, quantity: item.quantity })) }));
         } catch (error) {
-
+            console.error("Error fetching cart items:", error);
         }
     }
+    
 
     const handleDelete = async (value) => {
         try {
@@ -207,14 +208,14 @@ function Orders() {
                                         <img src={require("../../assets/images/payment.png")} height={26} />
                                     </p>
                                 </div>{" "}
-                                {/* card-body.// */}
+                             
                             </div>{" "}
-                            {/* card .// */}
+                           
                         </aside>{" "}
-                        {/* col.// */}
+                    
                     </div>
                 </div>{" "}
-                {/* container .//  */}
+             
             </section>
             {/* ========================= SECTION CONTENT END// ========================= */}
             {/* ========================= SECTION  ========================= */}

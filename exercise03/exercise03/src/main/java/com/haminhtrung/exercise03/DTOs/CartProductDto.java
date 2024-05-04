@@ -15,12 +15,8 @@ import lombok.Setter;
 @Setter
 public class CartProductDto {
     private UUID cartId;
-    private UUID productId;
     private Integer quantity;
-    private Category categories;
-    private Tag tag;
-    private Gallery gallery;
-  
+    private ProductDTO productDTO;
     
 
 }

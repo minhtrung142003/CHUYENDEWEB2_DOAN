@@ -20,7 +20,6 @@ public class OrderItemDto {
     private UUID orderId;
     private BigDecimal price;
     private int quantity;
-    private Order order;
     private String productName;
     private BigDecimal regularPrice;
     private BigDecimal discountPrice;

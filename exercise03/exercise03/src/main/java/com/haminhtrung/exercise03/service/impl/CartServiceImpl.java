@@ -4,9 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.haminhtrung.exercise03.DTOs.CartProductDto;
+import com.haminhtrung.exercise03.DTOs.mapper.ProductDtoooMapper;
 import com.haminhtrung.exercise03.entity.Cart;
 import com.haminhtrung.exercise03.repository.CartRepository;
 import com.haminhtrung.exercise03.service.CartService;
+import com.haminhtrung.exercise03.service.ProductService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,15 +20,21 @@ public class CartServiceImpl implements CartService {
 
     @Autowired
     private CartRepository cartRepository;
+    @Autowired
+    private ProductService productService;
+    @Autowired
+    private ProductDtoooMapper dtoooMappper;
 
     // hàm add cart
     @Override
     public Cart addCart(Cart cart) {
         // Tìm tất cả các giỏ hàng có cùng productId và staffAccountId
-        List<Cart> existingCarts = cartRepository.findAllByProductIdAndStaffAccountId(cart.getProductId(), cart.getStaffAccountId());
-    
+        List<Cart> existingCarts = cartRepository.findAllByProductIdAndStaffAccountId(cart.getProductId(),
+                cart.getStaffAccountId());
+
         if (!existingCarts.isEmpty()) {
-            // Nếu có giỏ hàng đã tồn tại, cập nhật quantity của giỏ hàng đầu tiên được tìm thấy
+            // Nếu có giỏ hàng đã tồn tại, cập nhật quantity của giỏ hàng đầu tiên được tìm
+            // thấy
             Cart existingCart = existingCarts.get(0);
             existingCart.setQuantity(existingCart.getQuantity() + cart.getQuantity());
             return cartRepository.save(existingCart);
@@ -35,8 +43,8 @@ public class CartServiceImpl implements CartService {
             return cartRepository.save(cart);
         }
     }
-    
-    // hàm update quantiy 
+
+    // hàm update quantiy
     @Override
     public void updateQuantity(UUID staffAccountId, UUID productId, Integer newQuantity) {
         List<Cart> carts = cartRepository.findByStaffAccountIdAndProductId(staffAccountId, productId);
@@ -47,22 +55,25 @@ public class CartServiceImpl implements CartService {
         }
     }
 
-    // hàm trả về list product 
+    // hàm trả về list product
     @Override
-public List<CartProductDto> getAllProductsInCartByStaffAccountId(UUID staffAccountId) {
-    List<Cart> carts = cartRepository.findAllByStaffAccountId(staffAccountId);
-    List<CartProductDto> cartProductDtos = new ArrayList<>();
-
-    for (Cart cart : carts) {
-        CartProductDto cartProductDto = new CartProductDto();
-        cartProductDto.setCartId(cart.getId()); // Set cartId for each cart product DTO
-        cartProductDto.setProductId(cart.getProductId());
-        cartProductDto.setQuantity(cart.getQuantity());
-        cartProductDtos.add(cartProductDto);
+    // hàm trả về list cart
+    public List<CartProductDto> getAllProductsInCartByStaffAccountId(UUID staffAccountId) {
+        List<Cart> carts = cartRepository.findAllByStaffAccountId(staffAccountId);
+        List<CartProductDto> cartProductDtos = new ArrayList<>();
+        for (Cart cart : carts) {
+            cartProductDtos.add(cartProductDTO(cart));
+        }
+        return cartProductDtos;
     }
 
-    return cartProductDtos;
-}
+    CartProductDto cartProductDTO(Cart cart) {
+        CartProductDto cartProductDto = new CartProductDto();
+        cartProductDto.setCartId(cart.getId());
+        cartProductDto.setQuantity(cart.getQuantity());
+        cartProductDto.setProductDTO(dtoooMappper.geProductDTO(productService.getProductById(cart.getProductId())));
+        return cartProductDto;
+    }
 
     // hàm get theo id cart
     @Override
@@ -79,45 +90,46 @@ public List<CartProductDto> getAllProductsInCartByStaffAccountId(UUID staffAccou
 
     // hàm update cart
     @Override
-public Cart updateCart(UUID cartId, Cart updatedCart) {
-    Cart existingCart = cartRepository.findById(cartId).orElse(null);
+    public Cart updateCart(UUID cartId, Cart updatedCart) {
+        Cart existingCart = cartRepository.findById(cartId).orElse(null);
 
-    if (existingCart != null) {
-        // Cập nhật các trường khác của giỏ hàng nếu cần
-        existingCart.setProductId(updatedCart.getProductId());
-        existingCart.setQuantity(updatedCart.getQuantity());
-        existingCart.setStaffAccountId(updatedCart.getStaffAccountId()); // Cập nhật staffAccountId thay vì staffAccount
+        if (existingCart != null) {
+            // Cập nhật các trường khác của giỏ hàng nếu cần
+            existingCart.setProductId(updatedCart.getProductId());
+            existingCart.setQuantity(updatedCart.getQuantity());
+            existingCart.setStaffAccountId(updatedCart.getStaffAccountId()); // Cập nhật staffAccountId thay vì
+                                                                             // staffAccount
 
-        // Nếu bạn cũng muốn cập nhật các mục trong giỏ hàng (cartItems), bạn cần xử lý ở đây
+            // Nếu bạn cũng muốn cập nhật các mục trong giỏ hàng (cartItems), bạn cần xử lý
+            // ở đây
 
-        return cartRepository.save(existingCart);
+            return cartRepository.save(existingCart);
+        }
+
+        return null;
     }
-
-    return null;
-}
-
 
     // hàm delete
     @Override
     public void deleteCart(UUID cartId) {
         cartRepository.deleteById(cartId);
     }
-    
+
     // hàm get all cart theo id user
     @Override
-public List<CartProductDto> getAllCartsByStaffAccountId(UUID staffAccountId) {
-    List<Cart> carts = cartRepository.findAllByStaffAccountId(staffAccountId);
-    List<CartProductDto> cartProductDtos = new ArrayList<>();
+    public List<CartProductDto> getAllCartsByStaffAccountId(UUID staffAccountId) {
+        List<Cart> carts = cartRepository.findAllByStaffAccountId(staffAccountId);
+        List<CartProductDto> cartProductDtos = new ArrayList<>();
 
-    for (Cart cart : carts) {
-        CartProductDto cartProductDto = new CartProductDto();
-        cartProductDto.setCartId(cart.getId()); // Set cartId for each cart product DTO
-        cartProductDto.setProductId(cart.getProductId());
-        cartProductDto.setQuantity(cart.getQuantity());
-        cartProductDtos.add(cartProductDto);
+        for (Cart cart : carts) {
+            CartProductDto cartProductDto = new CartProductDto();
+            cartProductDto.setCartId(cart.getId()); // Set cartId for each cart product DTO
+            // cartProductDto.setProductId(cart.getProductId());
+            cartProductDto.setQuantity(cart.getQuantity());
+            cartProductDtos.add(cartProductDto);
+        }
+
+        return cartProductDtos;
     }
-
-    return cartProductDtos;
-}
 
 }

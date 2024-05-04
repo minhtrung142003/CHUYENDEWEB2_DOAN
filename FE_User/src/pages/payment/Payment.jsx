@@ -17,13 +17,13 @@ function Payment() {
                 userName: state?.userName,
                 phone: state?.phone,
                 email: state?.email,
-                orderItemDto: listProduct?.map(i => ({
-                    productId: i?.id,
-                    price: i?.discountPrice,
+                orderItemDto: listProduct?.map(i => ({    // thay đổi chỗ này
+                    productId: i?.productDTO?.id,
+                    price: i?.productDTO?.discountPrice,
                     quantity: i?.quantity
                 })),
                 listIdCart: listProduct?.map(i => i?.cartId),
-                totalPrice: listProduct?.reduce((sum, i) => (i?.discountPrice * i?.quantity) + sum, 0),
+                totalPrice: listProduct?.reduce((sum, i) => (i?.productDTO?.discountPrice * i?.quantity) + sum, 0), //thay đổi chỗ này
                 totalDiscount: 0,
                 createdAt: convertToMidnight(new Date()),
                 deliveredCarrierAt: convertToMidnight(new Date()),
@@ -32,7 +32,9 @@ function Payment() {
             }
             const data = await addOrder(searchObj);
             if (data?.status === 200) {
-                window.location.href = "/"
+               console.log(data)
+               window.location.href = "/"
+
             }
 
         } catch (error) {

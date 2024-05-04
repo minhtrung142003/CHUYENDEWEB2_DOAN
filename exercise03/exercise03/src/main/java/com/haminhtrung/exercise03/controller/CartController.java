@@ -1,10 +1,8 @@
 package com.haminhtrung.exercise03.controller;
 
 import com.haminhtrung.exercise03.DTOs.CartProductDto;
-import com.haminhtrung.exercise03.DTOs.ProductDTO;
 import com.haminhtrung.exercise03.entity.Cart;
 import com.haminhtrung.exercise03.service.CartService;
-import com.haminhtrung.exercise03.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +20,8 @@ public class CartController {
     @Autowired
     private CartService cartService;
 
-    @Autowired
-    private ProductService productService; // Inject ProductService
+    // @Autowired
+    // private ProductService productService; // Inject ProductService
 
     @GetMapping
     public ResponseEntity<List<Cart>> getAllCarts() {
@@ -33,27 +31,10 @@ public class CartController {
 
    // Get all products in cart by staff account ID
    @GetMapping("/staff-accounts/{staffAccountId}")
-   public ResponseEntity<List<ProductDTO>> getAllProductsInCartByStaffAccountId(@PathVariable("staffAccountId") UUID staffAccountId) {
-       List<CartProductDto> cartProductDtos = cartService.getAllProductsInCartByStaffAccountId(staffAccountId);
-   
-       // Create a list to hold full product information
-       List<ProductDTO> productsInCart = new ArrayList<>();
-   
-       // Loop through the list of cart products
-       for (CartProductDto cartProductDto : cartProductDtos) {
-           ProductDTO productDTO = new ProductDTO(productService.getProductById(cartProductDto.getProductId()));
-   
-           // Check if productDTO is not null and add quantity information
-           if (productDTO != null) {
-               productDTO.setQuantity(cartProductDto.getQuantity()); // Set the quantity
-               // Set cartId for each productDTO
-               productDTO.setCartId(cartProductDto.getCartId());
-               productsInCart.add(productDTO);
-           }
-       }
-   
-       return ResponseEntity.ok(productsInCart);
+   public ResponseEntity<List<CartProductDto>> getAllProductsInCartByStaffAccountId(@PathVariable("staffAccountId") UUID staffAccountId) {
+      return  ResponseEntity.ok(cartService.getAllProductsInCartByStaffAccountId(staffAccountId));
    }
+   
    
 
     
